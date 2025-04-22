@@ -28,7 +28,7 @@ Output must be in JSON format like this:
 [
   {
     "subject": "Short, punchy subject line",
-    "body": "Body under 85 words",
+    "body": "Properly spaced body with signature",
     "delay": "0 days"
   },
   ...
@@ -41,16 +41,25 @@ Email 1 should follow this structure:
 4. A soft, non-pushy CTA that opens a conversation
 
 Requirements:
-- No markdown, no code blocks
-- Keep it simple, 5th grade English
-- No sales-y language, no pressure
-- Use a natural human tone
-- Include short subject lines inspired by these examples:
-  "Automate Outreach?", "Scale Leads?", "Reply Rates Up?", "30% More Replies?"
+- Keep it under 85 words per email
+- 5th grade reading level
+- No markdown or code blocks
+- Avoid sounding salesy or promotional
+- Use short, conversational language and sentence structure
+- Use line breaks between paragraphs for readability
+- End every email with this signature format:
+
+Best,  
+[Your Name]  
+[Your Company]  
+[Optional Contact Info]
+
+Subject lines must be short and inspired by these examples:
+"Automate Outreach?", "Reply Rates Up?", "Sendlane's Secret", "30% More Replies?"
 
 Here’s the context:
-Company: ${company}
-Website: ${website}
+Company: ${company}  
+Website: ${website}  
 Ideal Customer Profile: ${icp}
 `;
 
