@@ -22,29 +22,36 @@ export default async function handler(req, res) {
   }
 
   const prompt = `
-You are a B2B cold email strategist.
+You are a cold email expert and seasoned conversion copywriter. Your task is to write a 3-step cold email sequence that gets positive replies from busy B2B decision-makers.
 
-Generate a cold email sequence of 3 emails in JSON format.
-Each email must include:
-- subject
-- body
-- delay (e.g. "0 days", "2 days", "3 days")
-
-The format should be:
+Output must be in JSON format like this:
 [
   {
-    "subject": "Email subject here",
-    "body": "Email body here...",
+    "subject": "Short, punchy subject line",
+    "body": "Body under 85 words",
     "delay": "0 days"
   },
   ...
 ]
 
-Avoid explanations. Do NOT include markdown or formatting.
+Email 1 should follow this structure:
+1. A personalized observation about the recipient’s industry, job title, or company (Why them?)
+2. A relevant problem or missed opportunity they may face
+3. The dream outcome or transformation your solution offers (with optional proof)
+4. A soft, non-pushy CTA that opens a conversation
 
-Company name: ${company}
+Requirements:
+- No markdown, no code blocks
+- Keep it simple, 5th grade English
+- No sales-y language, no pressure
+- Use a natural human tone
+- Include short subject lines inspired by these examples:
+  "Automate Outreach?", "Scale Leads?", "Reply Rates Up?", "30% More Replies?"
+
+Here’s the context:
+Company: ${company}
 Website: ${website}
-Ideal customer profile: ${icp}
+Ideal Customer Profile: ${icp}
 `;
 
   try {
