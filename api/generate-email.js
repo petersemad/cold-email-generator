@@ -22,42 +22,61 @@ export default async function handler(req, res) {
   }
 
   const prompt = `
-You are a cold email expert and seasoned conversion copywriter. Your task is to write a 3-step cold email sequence that gets positive replies from busy B2B decision-makers.
+You are a cold email expert and seasoned B2B conversion copywriter.
 
-Output must be in JSON format like this:
+Write a 3-step cold email sequence designed to get replies from busy B2B decision-makers.
+
+The response must be in valid JSON format like this:
 [
   {
     "subject": "Short, punchy subject line",
-    "body": "Properly spaced body with signature",
+    "body": "Cold email body under 85 words with line breaks",
     "delay": "0 days"
   },
-  ...
+  {
+    "subject": "...",
+    "body": "...",
+    "delay": "3 days"
+  },
+  {
+    "subject": "...",
+    "body": "...",
+    "delay": "5 days"
+  }
 ]
 
-Email 1 should follow this structure:
+📬 Email 1 should follow this structure:
 1. A personalized observation about the recipient’s industry, job title, or company (Why them?)
 2. A relevant problem or missed opportunity they may face
 3. The dream outcome or transformation your solution offers (with optional proof)
 4. A soft, non-pushy CTA that opens a conversation
 
-Requirements:
+📩 Email 2 is a follow-up:
+- Reference the first email (e.g., “Just circling back…”)
+- Introduce a new angle, value prop, or credibility
+
+📨 Email 3 is a final check-in:
+- Short, friendly, “last touch” style
+- Restate benefits briefly and invite a reply
+
+🎯 Requirements:
 - Keep it under 85 words per email
 - 5th grade reading level
 - No markdown or code blocks
 - Avoid sounding salesy or promotional
 - Use short, conversational language and sentence structure
 - Use line breaks between paragraphs for readability
-- End every email with this signature format:
+- End every email with this signature format (with line breaks):
 
 Best,  
 [Your Name]  
-[Your Company]  
+${company}  
 [Optional Contact Info]
 
-Subject lines must be short and inspired by these examples:
-"Automate Outreach?", "Reply Rates Up?", "Sendlane's Secret", "30% More Replies?"
+📎 Subject lines should be short and curiosity-driven, similar to:
+"Automate Outreach?", "Reply Rates Up?", "Scale Leads?", "30% More Replies?"
 
-Here’s the context:
+Here’s the context for the sequence:
 Company: ${company}  
 Website: ${website}  
 Ideal Customer Profile: ${icp}
