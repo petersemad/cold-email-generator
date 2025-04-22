@@ -7,69 +7,79 @@ export default async function handler(req, res) {
   // ——————————————
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST requests allowed' });
+    return res.status(405).json({ error: 'Only POST allowed' });
   }
 
-  const { companyName, companyWebsite, idealCustomerProfile } = req.body;
+  const { company, website, icp } = req.body;
 
-  if (!companyName || !companyWebsite || !idealCustomerProfile) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!company || !website || !icp) {
+    return res.status(400).json({ error: 'Missing required fields: company, website, or icp' });
+  }
+
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) {
+    return res.status(500).json({ error: 'Missing OpenAI API key' });
   }
 
   const prompt = `
-You are a B2B outbound strategist. Your task is to generate a cold email sequence of 3 emails to engage the following company's ideal customers.
+You are a B2B cold email strategist.
 
-Here’s the input:
+Generate a cold email sequence of 3 emails in JSON format.
+Each email must include:
+- subject
+- body
+- delay (e.g. "0 days", "2 days", "3 days")
 
-Company Name: ${companyName}
-Website: ${companyWebsite}
-Ideal Customer Profile (ICP): ${idealCustomerProfile}
-
-Generate 3 emails as a JSON array. Each email should include:
-- "subject": short and engaging subject line
-- "body": concise body text (under 120 words)
-- "delay": number of days after the previous email (use 0 for the first one)
-
-The response MUST be formatted like this (no explanation):
-
+The format should be:
 [
   {
-    "subject": "Subject line here",
-    "body": "Body here...",
-    "delay": 0
+    "subject": "Email subject here",
+    "body": "Email body here...",
+    "delay": "0 days"
   },
   ...
 ]
+
+Avoid explanations. Do NOT include markdown or formatting.
+
+Company name: ${company}
+Website: ${website}
+Ideal customer profile: ${icp}
 `;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const apiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${openaiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 1000
+        temperature: 0.7
       })
     });
 
-    const data = await response.json();
+    const data = await apiRes.json();
     const raw = data.choices?.[0]?.message?.content?.trim();
 
-    let sequence;
+    if (!raw) {
+      return res.status(500).json({ error: 'Empty response from OpenAI' });
+    }
+
+    let sequence = [];
+
     try {
       sequence = JSON.parse(raw);
-    } catch {
-      return res.status(500).json({ error: 'Failed to parse GPT response as JSON' });
+    } catch (err) {
+      console.error('JSON parse failed:', err, raw);
+      return res.status(500).json({ error: 'Failed to parse GPT response as JSON.' });
     }
 
     return res.status(200).json({ sequence });
   } catch (err) {
-    console.error('API error:', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error(err);
+    return res.status(500).json({ error: 'Error generating sequence.' });
   }
 }
