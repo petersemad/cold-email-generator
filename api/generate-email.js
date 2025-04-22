@@ -7,72 +7,69 @@ export default async function handler(req, res) {
   // ——————————————
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST allowed' });
+    return res.status(405).json({ error: 'Only POST requests allowed' });
   }
 
-  const { industry, title, offer, tone } = req.body;
+  const { companyName, companyWebsite, idealCustomerProfile } = req.body;
 
-  if (!industry || !title || !offer || !tone) {
-    return res.status(400).json({ error: 'Missing one of: industry, title, offer, tone' });
-  }
-
-  const openaiKey = process.env.OPENAI_API_KEY;
-
-  if (!openaiKey) {
-    return res.status(500).json({ error: 'Missing OpenAI API key' });
+  if (!companyName || !companyWebsite || !idealCustomerProfile) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   const prompt = `
-You are an expert outbound sales strategist and cold email copywriter with 10+ years of experience writing B2B cold emails that convert. You specialize in creating short, personalized, high-converting cold emails that spark curiosity and generate replies.
+You are a B2B outbound strategist. Your task is to generate a cold email sequence of 3 emails to engage the following company's ideal customers.
 
-You follow these rules:
-- Use a natural, non-pitchy tone
-- Never use jargon or buzzwords
-- Avoid “I wanted to reach out” and similar fluff
-- Always lead with relevance or pain point
-- Keep it under 120 words
-- End with a low-friction CTA (e.g. “Open to chatting?”)
+Here’s the input:
 
-You adapt the email to the prospect’s role and industry. You may use humor, social proof, or insights depending on the selected tone.
+Company Name: ${companyName}
+Website: ${companyWebsite}
+Ideal Customer Profile (ICP): ${idealCustomerProfile}
 
-You always return the output in this format:
-Subject Line: [Insert Subject Line]
-Email Body:
-[Email paragraph 1]
-[Email paragraph 2]
-[Closing + CTA]
+Generate 3 emails as a JSON array. Each email should include:
+- "subject": short and engaging subject line
+- "body": concise body text (under 120 words)
+- "delay": number of days after the previous email (use 0 for the first one)
 
-Do not include explanations or headers. Only return the formatted cold email.
+The response MUST be formatted like this (no explanation):
 
-Generate a cold email using the following details:
-
-Target Industry: ${industry}
-Prospect Job Title: ${title}
-My Offer: ${offer}
-Tone: ${tone} (Choose from: Friendly, Professional, Witty, Casual, Assertive)
-  `;
+[
+  {
+    "subject": "Subject line here",
+    "body": "Body here...",
+    "delay": 0
+  },
+  ...
+]
+`;
 
   try {
-    const apiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini-2024-07-18', // 💸 upgraded model
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 300
+        max_tokens: 1000
       })
     });
 
-    const json = await apiRes.json();
-    const email = json.choices?.[0]?.message?.content?.trim();
+    const data = await response.json();
+    const raw = data.choices?.[0]?.message?.content?.trim();
 
-    return res.status(200).json({ email });
+    let sequence;
+    try {
+      sequence = JSON.parse(raw);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse GPT response as JSON' });
+    }
+
+    return res.status(200).json({ sequence });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'OpenAI API error' });
+    console.error('API error:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
