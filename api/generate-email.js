@@ -10,10 +10,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only POST allowed' });
   }
 
-  const { company, website, icp } = req.body;
+  const { company, website, icp, offer, tone } = req.body;
 
-  if (!company || !website || !icp) {
-    return res.status(400).json({ error: 'Missing required fields: company, website, or icp' });
+  if (!company || !website || !icp || !offer || !tone) {
+    return res.status(400).json({ error: 'Missing required fields: company, website, icp, offer, or tone' });
   }
 
   const openaiKey = process.env.OPENAI_API_KEY;
@@ -79,7 +79,9 @@ ${company}
 Here’s the context for the sequence:
 Company: ${company}  
 Website: ${website}  
-Ideal Customer Profile: ${icp}
+Ideal Customer Profile: ${icp}  
+Offer: ${offer}  
+Tone: ${tone}
 `;
 
   try {
